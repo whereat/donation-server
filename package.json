@@ -1,0 +1,33 @@
+{
+  "name": "whereat-donation-server",
+  "version": "0.0.1",
+  "description": "server for accepting donations to where@",
+  "main": "./src/app/index.js",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "^4.13.3"
+  },
+  "devDependencies": {
+    "babel": "^6.3.26",
+    "babel-cli": "^6.3.17",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.3.13",
+    "chai": "^3.4.1",
+    "supertest": "^1.1.0",
+    "supertest-as-promised": "^2.0.2"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test mocha src/test/**/*.spec.js --compilers js:babel-register",
+    "dev": "NODE_ENV=dev babel-node ./src/app/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whereat/donation-server"
+  },
+  "author": "Total Location Test Paragraph",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/whereat/donation-server/issues"
+  },
+  "homepage": "https://whereat.io"
+}
