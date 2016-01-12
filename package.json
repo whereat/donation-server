@@ -5,7 +5,10 @@
   "main": "./src/app/index.js",
   "dependencies": {
     "body-parser": "^1.14.2",
-    "express": "^4.13.3"
+    "express": "^4.13.3",
+    "lodash": "^3.10.1",
+    "mongodb": "^2.1.3",
+    "mongoose": "^4.3.4"
   },
   "devDependencies": {
     "babel": "^6.3.26",
@@ -13,6 +16,10 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-register": "^6.3.13",
     "chai": "^3.4.1",
+    "chai-as-promised": "^5.2.0",
+    "mocha": "^2.3.4",
+    "mocha-mongoose": "^1.1.1",
+    "mongodb": "^2.1.3",
     "supertest": "^1.1.0",
     "supertest-as-promised": "^2.0.2"
   },
