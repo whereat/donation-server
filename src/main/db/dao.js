@@ -1,4 +1,4 @@
-import donations from '../test/support/sampleDonations';
+import donations from '../../test/support/sampleDonations';
 
 const db = {};
 

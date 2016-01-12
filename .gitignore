@@ -34,3 +34,7 @@ flycheck
 # intellij stuff
 .idea/
 *.iml
+
+# db
+
+src/main/db/data/*
