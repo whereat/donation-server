@@ -1,71 +1,55 @@
 import chai from 'chai';
+const should = chai.should();
 import asPromised from 'chai-as-promised';
 chai.use(asPromised);
-const should = chai.should();
+import datetime from 'chai-datetime';
+chai.use(datetime);
 
 import mg from 'mongoose';
+mg.Promise = Promise;
 import mm from 'mocha-mongoose';
-const dbUri = 'mongodb://localhost/whereat-donations-test';
+import { dbUri } from '../../../main/config';
 const clearDb = mm(dbUri);
+import { domainFields, demongoify, demongoifyMany } from '../../support/dbHelpers';
 
-import { assign, contains, keys, pick } from 'lodash';
+import { keys } from 'lodash';
 import Donation from '../../../main/db/models/donation';
+import ds from '../../support/sampleDonations';
 
 describe('Donation model', () => {
-
-  const d1 = {
-    name: 'donor1',
-    email: 'donor1@example.com',
-    amount: 100,
-    date: new Date('Sun Dec 27 2015 00:00:01 GMT-0500')
-  };
-
-  const d2 = {
-    name: 'donor2',
-    email: 'donor2@example.com',
-    amount: 200,
-    date: new Date('Sun Dec 27 2025 00:00:02 GMT-0500')
-  };
-
-  const domainFields = [
-    'date',
-    'amount',
-    'email',
-    'name'
-  ];
-
-
-  const stripDbFields = rec => pick(rec, domainFields);
-  const demongoify = recs => Promise.resolve(recs.map(stripDbFields));
 
   beforeEach(done => {
     mg.connection.db ? done() : mg.connect(dbUri, done);
   });
 
-  it('has correct fields', () =>{
-    const d = new Donation(d1);
+  it('connects to correct db URI', () => {
+    dbUri.should.equal('mongodb://localhost/whereat-donations-test');
+  });
 
-    keys(d._doc).should.eql(['_id','date','amount','email','name']);
+  it('has correct fields', () =>{
+    const d = new Donation(ds[0]);
+
+    keys(d._doc).should.eql(['_id'].concat(domainFields));
   });
 
   it('populates fields correctly', () => {
-    const d = new Donation(d1);
+    const d = new Donation(ds[0]);
 
-    d.get('date').should.eql(d1.date);
-    d.get('amount').should.equal(d1.amount);
-    d.get('email').should.equal(d1.email);
-    d.get('name').should.equal(d1.name);
+    d.get('date').should.eql(new Date(ds[0].date));
+    d.get('amount').should.equal(ds[0].amount);
+    d.get('email').should.equal(ds[0].email);
+    d.get('name').should.equal(ds[0].name);
   });
 
   it('creates a document', done => {
 
     Donation.count().should.become(0)
 
-      .then(() => Donation.create(d1))
+      .then(() => Donation.create(ds[0]))
       .then(() => Promise.all([
 
         Donation.count().should.become(1),
-        Donation.find({}).then(demongoify).should.become([d1])
+        Donation.find({}).then(demongoifyMany).should.become([ds[0]])
 
       ])).should.notify(done);
   });
@@ -74,11 +58,11 @@ describe('Donation model', () => {
 
     Donation.count().should.become(0)
 
-      .then(() => Donation.create([d1, d2]))
+      .then(() => Donation.create(ds))
       .then(() => Promise.all([
 
-        Donation.count().should.become(2),
-        Donation.find({}).then(demongoify).should.become([d1, d2])
+        Donation.count().should.become(3),
+        Donation.find({}).then(demongoifyMany).should.become(ds)
 
       ])).should.notify(done);
   });
