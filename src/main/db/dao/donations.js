@@ -1,5 +1,7 @@
 import Donation from '../models/donation';
-import { assign, flow, map, sortBy, pick, pluck, omit, sum } from 'lodash';
+import {
+  assign, flow, map, reduce, sortBy, pick, pluck, omit, sum, keys, includes, values
+} from 'lodash';
 
 export const domainFields = [
   'email',
@@ -9,6 +11,44 @@ export const domainFields = [
   'date',
   'amount',
 ];
+const df = domainFields;
+const pp = d => JSON.stringify(d, null, 2);
+
+// validate that a donation..
+
+// has correct fields
+export const badFieldMsg = d =>`incorrect fields in: \n ${pp(d)}\n should have fields:\n ${df}`;
+const noMissing = ks => ks.length === df.length;
+const noExtra = ks => reduce(ks, (acc, k) => acc && includes(df, k));
+const correctFields = acc => {
+  const ks = keys(acc.rec);
+  return noMissing(ks) && noExtra(ks) ?
+    acc :
+    assign({}, acc, { err: new Error(badFieldMsg(acc.rec))});
+};
+
+// isn't empty
+export const emptyMsg = d => `empty fields in ${pp(d)}`;
+const hasLength = (acc, str) => acc && str.toString().length > 0;
+const nonEmpty = acc =>
+  reduce(values(acc.rec), hasLength) ?
+  acc :
+  assign({}, acc, { err: new Error(emptyMsg(acc.rec)) });
+
+// has correctly formatted email address
+export const badEmailMsg = d => `bad email address: ${d.email}`;
+const emailTest = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const goodEmail = acc =>
+  acc.rec.email.match(emailTest) !== null ?
+  acc :
+  assign({}, acc, { err: new Error(badEmailMsg(acc.rec)) });
+
+// has all of the above properties
+const validations = [correctFields, nonEmpty, goodEmail];
+export const validate = d => {
+  const {err, rec} = flow(...validations)({rec: d, err: null});
+  return err ? Promise.reject(err) : Promise.resolve(rec);
+};
 
 // parse a donation from a mongo record
 const getDoc = d => d._doc ? d._doc : d;
@@ -27,11 +67,17 @@ export const demongoifyMany = flow(parseFields, sortByTime);
 const pluckAmounts = ds => pluck(ds, 'amount');
 export const getTotal = flow(pluckAmounts, sum);
 
+// pull it all together!
 export default {
-  create: d => Donation.create(d).then(demongoify),
-  getAll: () => Donation.find({}).then(ds => ({
-    total: getTotal(ds),
-    donations: demongoifyMany(ds)
-  }))
+  create: d =>
+    validate(d)
+    .then(d_ => Donation.create(d_)) // note: `Donation.create` can't be passed as lambda
+    .then(demongoify),
+  getAll: () =>
+    Donation.find({})
+    .then(ds => ({
+      total: getTotal(ds),
+      donations: demongoifyMany(ds)
+    }))
 };
 
