@@ -1,3 +1,5 @@
+import { omit, assign } from 'lodash';
+
 export const ds = [
     {
       amount: 100,
@@ -47,4 +49,12 @@ export const dResponse = {
   total: 600,
   donations: shortDs.reverse()
 };
+
+export const anon = assign({}, ds[0], { anonymous: false });
+export const missing = omit(ds[0], 'name');
+export const extra = assign({}, ds[0], { foo: 'bar'});
+export const empty = assign({}, ds[0], { name: ''});
+export const badEmail1 = assign({}, ds[0], { email: 'foo@bar' });
+export const badEmail2 = assign({}, ds[0], { email: 'foobar.com' });
+export const badEmail3 = assign({}, ds[0], { email: 'foo@ bar.com' });
 

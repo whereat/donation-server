@@ -6,7 +6,7 @@ const sendErr = (err, resp) => resp.status(500).json({ error: err });
 
 route.post('/', (req, res) => {
   return dao.create(req.body)
-    .then(d => Promise.resolve(res.send(d)))
+    .then(d => res.json(d))
     .catch(err => sendErr(err.message, res));
 });
 
