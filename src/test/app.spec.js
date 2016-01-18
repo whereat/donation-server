@@ -9,13 +9,13 @@ mg.Promise = Promise;
 import mm from 'mocha-mongoose';
 import { dbUri } from '../main/config';
 const clearDb = mm(dbUri);
-import { demongoify, demongoifyMany } from './support/dbHelpers';
+import { demongoify, demongoifyMany, demongoifyResponse } from './support/dbHelpers';
 
 import request from 'supertest-as-promised';
 import { omit } from 'lodash';
 
 import app from '../main/app';
-import ds from './support/sampleDonations';
+import { ds, dResponse } from './support/sampleDonations';
 import Donation from '../main/db/models/donation';
 
 describe('Application', () => {
@@ -34,7 +34,7 @@ describe('Application', () => {
           .send(ds[0])
           .expect('Content-Type', /json/)
           .expect(200)
-          .then(res =>  demongoify(res.body).should.eql(ds[0]))
+          .then(res =>  res.body.should.eql(ds[0]))
           .should.notify(done);
       });
     });
@@ -53,7 +53,7 @@ describe('Application', () => {
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect(200)
-                .then(res => demongoifyMany(res.body).should.eql(ds)))
+                .then(res => res.body.should.eql(dResponse)))
           .should.notify(done);
       });
     });
@@ -66,7 +66,7 @@ describe('Application', () => {
           .get('/donations')
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
-          .expect(200, [])
+          .expect(200, { total: 0, donations: [] })
           .should.notify(done);
 
       });

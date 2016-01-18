@@ -1,15 +1,4 @@
-import { assign, pick } from 'lodash';
+import { assign } from 'lodash';
 
-export const domainFields = [
-  'date',
-  'amount',
-  'email',
-  'name'
-];
-
-const stripDbFields = rec => pick(rec, domainFields);
-const resolveDate = dStr => new Date(dStr).toString();
-const resolveDateField = rec => assign({}, rec, {date: resolveDate(rec.date)});
-
-export const demongoify = rec => resolveDateField(stripDbFields(rec));
-export const demongoifyMany = recs => recs.map(demongoify);
+export const mongoify = d =>
+  assign({}, d, { _id: 'fakeId1', __v: '0', date: new Date(d.date) });

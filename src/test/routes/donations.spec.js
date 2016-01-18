@@ -9,9 +9,10 @@ chai.use(asPromised);
 
 import request from 'supertest-as-promised';
 import app from '../../main/app';
-import ds from '../support/sampleDonations';
+import { ds, dResponse } from '../support/sampleDonations';
+import Donation from '../../main/db/models/donation';
+import md from '../support/mockDonation';
 import dao from '../../main/db/dao/donations';
-import mockDao from '../support/mockDonationsDao';
 import route from '../../main/routes/donations';
 
 describe('Donation routes', () => {
@@ -19,7 +20,7 @@ describe('Donation routes', () => {
   describe('POST /donations', () => {
 
     let create;
-    beforeEach(() => create = sinon.stub(dao, 'create', mockDao.create));
+    beforeEach(() => create = sinon.stub(Donation, 'create', md.create));
     afterEach(() => create.restore());
 
     const postDonation = () => {
@@ -33,7 +34,6 @@ describe('Donation routes', () => {
     describe('when handling any request', () => {
 
       it('dispatches to dao#create', done => {
-
         postDonation()
           .then(() =>create.should.have.been.calledWith(ds[0]))
           .should.notify(done);
@@ -65,9 +65,17 @@ describe('Donation routes', () => {
 
   describe('GET /donations', () => {
 
+    let find;
     let getAll;
-    beforeEach(() => getAll = sinon.stub(dao, 'getAll', mockDao.getAll));
-    afterEach(() => getAll.restore());
+    
+    beforeEach(() => {
+      find = sinon.stub(Donation, 'find', md.find);
+      getAll = sinon.spy(dao, 'getAll');
+    });
+    afterEach(() => {
+      find.restore();
+      getAll.restore();
+    });
 
     const getDonations = () => {
       return request(app)
@@ -82,15 +90,14 @@ describe('Donation routes', () => {
         getDonations()
           .then(() => getAll.should.have.been.called)
           .should.notify(done);
-
       });
     });
 
     describe('when db write succeeds', () => {
 
-      it('returns just-recorded donation', done => {
+      it('returns just-recorded donations', done => {
         getDonations()
-          .expect(200, ds)
+          .expect(200, dResponse)
           .should.notify(done);
       });
     });
@@ -98,17 +105,16 @@ describe('Donation routes', () => {
     describe('when db write fails', () => {
 
       beforeEach(() => {
-        getAll.restore();
-        getAll = sinon.stub(
-          dao, 'getAll', d => Promise.reject((new Error("Oh noes!"))));
+        find.restore();
+        find = sinon.stub(
+          Donation, 'find', d => Promise.reject((new Error("Oh noes!"))));
       });
 
       it('returns error message', done => {
         getDonations()
           .expect(500, {error: 'Oh noes!'})
-          .then(res => getAll.restore()).should.notify(done);
+          .should.notify(done);
       });
     });
-
   });
 });
