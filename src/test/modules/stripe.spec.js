@@ -12,7 +12,7 @@ import { ommit, assign } from 'lodash';
 
 import { getToken, toCents, toCharge, charge } from '../../main/modules/stripe';
 
-describe('stripe module', () => {
+describe('Stripe module', () => {
 
   describe('#getToken', () => {
 

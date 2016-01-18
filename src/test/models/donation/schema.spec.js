@@ -10,10 +10,10 @@ mg.Promise = Promise;
 import mm from 'mocha-mongoose';
 import { dbUri } from '../../../main/config';
 const clearDb = mm(dbUri);
-import { domainFields, demongoify, demongoifyMany } from '../../../main/db/dao/donations';
+import { domainFields, demongoify, demongoifyMany } from '../../../main/models/donation/dao';
 
 import { keys } from 'lodash';
-import Donation from '../../../main/db/models/donation';
+import Donation from '../../../main/models/donation/schema';
 import { ds } from '../../support/sampleDonations';
 import { mongoify } from '../../support/dbHelpers';
 
