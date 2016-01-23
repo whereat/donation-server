@@ -3,7 +3,6 @@ const should = chai.should();
 import asPromised from 'chai-as-promised';
 chai.use(asPromised);
 
-
 import mg from 'mongoose';
 mg.Promise = Promise;
 import mm from 'mocha-mongoose';
@@ -15,8 +14,8 @@ import { omit } from 'lodash';
 
 import app from '../main/app';
 import { ds, dResponse, missing, extra, empty, badEmail1 } from './support/sampleDonations';
-import { badFieldMsg, emptyMsg, badEmailMsg } from '../main/db/dao/donations';
-import Donation from '../main/db/models/donation';
+import { badFieldMsg, emptyMsg, badEmailMsg } from '../main/models/donation/validate';
+import Donation from '../main/models/donation/schema';
 
 describe('Application', () => {
 

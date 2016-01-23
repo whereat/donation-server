@@ -1,11 +1,12 @@
 import express from 'express';
-import dao from '../db/dao/donations';
+import dao from '../models/donation/dao';
 const route = express.Router();
 
 const sendErr = (err, resp) => resp.status(500).json({ error: err });
 
 route.post('/', (req, res) => {
-  return dao.create(req.body)
+  // TODO: validate(req.body).then(d => charge(d)).then(d => res.json(d)).catch(...)
+  dao.create(req.body)
     .then(d => res.json(d))
     .catch(err => sendErr(err.message, res));
 });

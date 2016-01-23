@@ -10,9 +10,9 @@ chai.use(asPromised);
 import request from 'supertest-as-promised';
 import app from '../../main/app';
 import { ds, dResponse } from '../support/sampleDonations';
-import Donation from '../../main/db/models/donation';
+import Donation from '../../main/models/donation/schema';
 import md from '../support/mockDonation';
-import dao from '../../main/db/dao/donations';
+import dao from '../../main/models/donation/dao';
 import route from '../../main/routes/donations';
 
 describe('Donation routes', () => {
