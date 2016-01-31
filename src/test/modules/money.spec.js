@@ -13,11 +13,17 @@ describe('Money module', () => {
       toCents(100.00).should.equal(10000);
       toCents(100.99).should.equal(10099);
 
-      toCents('100.00').should.equal(10000);
+      toCents('$100').should.equal(10000);
       toCents('$100.00').should.equal(10000);
       toCents('$100.99').should.equal(10099);
-      toCents(' $100.99 ').should.equal(10099);
+      toCents('100.00').should.equal(10000);
 
+      toCents(' $100.00 ').should.equal(10000);
+      toCents('$100.0').should.equal(10000);
+      toCents('$100.000').should.equal(10000);
+      toCents(' 100 ').should.equal(10000);
+      toCents(' 100.00 ').should.equal(10000);
+      
       toCents('foobar').should.equal(0);
     });
   });

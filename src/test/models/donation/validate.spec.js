@@ -10,7 +10,7 @@ chai.use(asPromised);
 import { omit, assign, chain } from 'lodash';
 
 import {
-  ds, anon, missing, extra, empty, badAmount, badEmail1, badEmail2, badEmail3
+  ds, ds_, anon, anon_, missing, extra, empty, badAmount, badEmail1, badEmail2, badEmail3
 } from '../../support/sampleDonations';
 
 
@@ -24,13 +24,13 @@ describe('Donation validation', () => {
 
     it('accepts a well-formed request', done => {
       validate(ds[0])
-        .should.become(ds[0])
+        .should.become(ds_[0])
         .should.notify(done);
     });
 
     it('accepts a well-formed anonymous request', done => {
       validate(anon)
-        .should.become(anon)
+        .should.become(anon_)
         .should.notify(done);
     });
   });

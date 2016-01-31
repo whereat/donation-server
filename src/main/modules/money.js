@@ -4,9 +4,9 @@ const floor = Math;
 export const toCents = amt => {
   switch(typeof amt) {
   case 'string':
-    const dollarPattern = /(\$?)(\d+)(\.?)(\d+)/;
+    const dollarPattern = /^(\$?)(\d+)(\.?)(\d*)$/;
     const matches = amt.trim().match(dollarPattern);
-    return !matches ? 0 : parseInt(matches[2]) * 100 + parseInt(matches[4]);
+    return !matches ? 0 : parseInt(matches[2]) * 100 + (parseInt(matches[4]) || 0);
   default:
       return amt * 100;
   }

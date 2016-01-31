@@ -10,11 +10,15 @@ import { dbUri } from '../main/config';
 const clearDb = mm(dbUri);
 
 import request from 'supertest-as-promised';
-import { omit } from 'lodash';
+import { assign, omit } from 'lodash';
+import { toDollarStr } from '../main/modules/money';
 
 import app from '../main/app';
+
 import {
-  getStripeD, ds, dResponse, missing, extra, empty, badEmail1 } from './support/sampleDonations';
+  getStripeD, ds, ds_, outDs, dResponse, missing, extra, empty, badEmail1 }
+from './support/sampleDonations';
+
 import { badFieldMsg, emptyMsg, badEmailMsg } from '../main/models/donation/validate';
 import Donation from '../main/models/donation/schema';
 
@@ -34,11 +38,13 @@ describe('Application', () => {
     describe('when correctly formatted', () => {
 
       it('writes donation to db & returns it', done => {
-        getStripeD().then(d => 
-          submitDonation(d)
-            .expect(200)
-            .then(res =>  res.body.should.eql(d))  
-        ).should.notify(done);
+        getStripeD()
+          .then(
+            d => 
+              submitDonation(d)
+              .expect(200)
+              .then(res =>  res.body.should.eql(assign({}, d, {amount: toDollarStr(ds_[0].amount)})))  
+          ).should.notify(done);
       });
     });
 
@@ -81,7 +87,7 @@ describe('Application', () => {
     describe('when db has contents', () => {
 
       it('returns all donations in DB', done => {
-        Donation.create(ds)
+        Donation.create(ds_)
           .then(() =>
                 getDonations()
                 .expect(200)
@@ -94,7 +100,7 @@ describe('Application', () => {
 
       it('returns an empty list', done => {
         getDonations()
-          .expect(200, { total: 0, donations: [] })
+          .expect(200, { total: "$0.00", donations: [] })
           .should.notify(done);
       });
     });

@@ -12,7 +12,7 @@ import { omit, assign, chain } from 'lodash';
 import Donation from '../../../main/models/donation/schema';
 import md from '../../support/mockDonation';
 import { mongoify } from '../../support/dbHelpers';
-import { ds, dResponse } from '../../support/sampleDonations';
+import { ds, ds_, outDs, dResponse } from '../../support/sampleDonations';
 
 import { create, getAll, demongoify, demongoifyMany, getTotal } from '../../../main/models/donation/dao';
 
@@ -25,9 +25,9 @@ describe('Donation DAO', () => {
     afterEach(() => dbCreate.restore());
 
     it('dispatches to Donation#create', done => {
-      create(ds[0])
-        .should.become(ds[0])
-        .then(() => dbCreate.should.have.been.calledWith(ds[0]))
+      create(ds_[0])
+        .should.become(outDs[0])
+        .then(() => dbCreate.should.have.been.calledWith(ds_[0]))
         .should.notify(done);
     });
 
@@ -36,8 +36,8 @@ describe('Donation DAO', () => {
       describe('demongoify', () => {
 
         it('parses a donation from a mongo document', done => {
-          md.create(ds[0])
-            .then(d => demongoify(d).should.eql(ds[0]))
+          md.create(ds_[0])
+            .then(d => demongoify(d).should.eql(outDs[0]))
             .should.notify(done);
         });
       });
@@ -78,7 +78,7 @@ describe('Donation DAO', () => {
 
         it('sums donations from a mongo collection', done => {
           md.find({})
-            .then(ds_ => getTotal(ds_).should.eql(dResponse.total))
+            .then(ds_ => getTotal(ds_).should.eql(ds_[0].amount + ds_[1].amount + ds_[2].amount))
             .should.notify(done);
         });
       });

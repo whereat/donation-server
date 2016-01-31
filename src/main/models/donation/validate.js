@@ -1,5 +1,6 @@
 import { domainFields as df } from './dao';
-import { assign, reduce, pluck, omit, keys, includes, values, flow } from 'lodash';
+import { toCents } from '../../modules/money';
+import { assign, merge, reduce, pluck, omit, keys, includes, values, flow } from 'lodash';
 
 const pp = d => JSON.stringify(d, null, 2);
 
@@ -32,10 +33,17 @@ const goodEmail = acc =>
   acc :
   assign({}, acc, { err: new Error(badEmailMsg(acc.rec)) });
 
-// TODO: has valid donation amount
+// has valid donation amount (and convert amount to cents)
+export const badAmountMsg = d => `invalid donation amount: ${d.amount}`;
+const goodAmount = acc => {
+  const cents = toCents(acc.rec.amount);
+  return cents !== 0 ?
+    merge({}, acc, { rec: { amount: cents} }) : 
+    assign({}, acc, { err: new Error(badAmountMsg(acc.rec)) });
+};
 
 // has all of the above properties
-const validations = [correctFields, nonEmpty, goodEmail];
+const validations = [correctFields, nonEmpty, goodAmount, goodEmail];
 export const validate = d => {
   const {err, rec} = flow(...validations)({rec: d, err: null});
   return err ? Promise.reject(err) : Promise.resolve(rec);
