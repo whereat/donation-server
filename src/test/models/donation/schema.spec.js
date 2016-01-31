@@ -27,14 +27,14 @@ mg.Promise = Promise;
 import mm from 'mocha-mongoose';
 import { dbUri } from '../../../main/config';
 const clearDb = mm(dbUri);
-import { domainFields, demongoify, demongoifyMany } from '../../../main/db/dao/donations';
+import { domainFields, demongoify, demongoifyMany } from '../../../main/models/donation/dao';
 
 import { keys } from 'lodash';
-import Donation from '../../../main/db/models/donation';
-import { ds } from '../../support/sampleDonations';
+import Donation from '../../../main/models/donation/schema';
+import { inDs, ds, outDs } from '../../support/sampleDonations';
 import { mongoify } from '../../support/dbHelpers';
 
-describe('Donation model', () => {
+describe('Donation schema', () => {
 
   beforeEach(done => {
     mg.connection.db ? done() : mg.connect(dbUri, done);
@@ -74,7 +74,7 @@ describe('Donation model', () => {
 
           Donation.count().should.become(1),
           Donation.find({})
-            .then(ds_ => demongoify(ds_[0]))
+            .then(ds => demongoify(ds[0]))
             .should.become(ds[0])
 
         ])).should.notify(done);
@@ -89,7 +89,7 @@ describe('Donation model', () => {
 
           Donation.count().should.become(3),
           Donation.find({})
-            .then(ds_ => ds_.map(demongoify))
+            .then(ds => ds.map(demongoify))
             .should.become(ds)
 
         ])).should.notify(done);

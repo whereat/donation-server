@@ -26,41 +26,140 @@ chai.use(asPromised);
 
 import request from 'supertest-as-promised';
 import app from '../../main/app';
-import { ds, dResponse } from '../support/sampleDonations';
-import Donation from '../../main/db/models/donation';
+import { getStripeInD, inDs, ds, outDs, outDsResponse } from '../support/sampleDonations';
+import Donation from '../../main/models/donation/schema';
 import md from '../support/mockDonation';
-import dao from '../../main/db/dao/donations';
+
 import route from '../../main/routes/donations';
+import stripe from '../../main/modules/stripe';
+import dao from '../../main/models/donation/dao';
+import donations from '../../main/routes/donations';
 
 describe('Donation routes', () => {
 
+  const error = d => Promise.reject(new Error("Oh noes!"));
+
   describe('POST /donations', () => {
 
+    let parse;
+    let validate;
+    let charge;
     let create;
-    beforeEach(() => create = sinon.stub(Donation, 'create', md.create));
-    afterEach(() => create.restore());
+    let prettyPrint;
+    
+    beforeEach(() => {
+      parse = sinon.spy(route, 'parse');
+      validate = sinon.stub(route, 'validate', d => Promise.resolve(d));
+      charge = sinon.stub(route, 'charge', d => Promise.resolve(d));
+      create = sinon.stub(route, 'create', d => Promise.resolve(d));
+      prettyPrint = sinon.spy(route, 'prettyPrint');
+    });
 
-    const postDonation = () => {
-      return request(app)
-        .post('/donations')
-        .set('Accept', 'application/json')
-        .send(ds[0])
-        .expect('Content-Type', /json/);
-    };
+    afterEach(() => {
+      parse.restore();
+      validate.restore();
+      charge.restore();
+      create.restore();
+      prettyPrint.restore();
+    });
 
-    describe('when handling any request', () => {
+    const postDonation = () => 
+            request(app)
+            .post('/donations')
+            .set('Accept', 'application/json')
+            .send(inDs[0])
+            .expect('Content-Type', /json/);
 
-      it('dispatches to dao#create', done => {
+    describe('happy path', () => {
+
+      it('dispatches to chain of helper promises', done => {
         postDonation()
-          .then(() =>create.should.have.been.calledWith(ds[0]))
+          .then(() => {
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.have.been.calledWith(ds[0]);
+            create.should.have.been.calledWith(ds[0]);
+            prettyPrint.should.have.been.calledWith(ds[0]);
+          }).should.notify(done);
+      });
+
+      it('returns just-recorded donation', done => {
+        postDonation().expect(200, outDs[0], done);
+      });
+    });
+
+    describe('when parsing fails', () => {
+
+      beforeEach(() => {
+        parse.restore();
+        parse = sinon.stub(route, 'parse', error);
+      });
+
+      it('stops execution of promise chain at #parse', done => {
+        postDonation()
+          .then(() => {
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.not.have.been.called;
+            charge.should.not.have.been.called;
+            create.should.not.have.been.called;
+            prettyPrint.should.not.have.been.called;
+          }).should.notify(done);
+      });
+
+      it('returns an error message', done => {
+        postDonation()
+          .expect(500, {error: 'Oh noes!'})
           .should.notify(done);
       });
     });
 
-    describe('when db write succeeds', () => {
+    describe('when validation fails', () => {
 
-      it('returns just-recorded donation', done => {
-        postDonation().expect(200, ds[0], done);
+      beforeEach(() => {
+        validate.restore();
+        validate = sinon.stub(route, 'validate', error);
+      });
+      
+      it('stops execution of promise chain at #validate', done => {
+        postDonation()
+          .then(() => {
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.not.have.been.called;
+            create.should.not.have.been.called;
+            prettyPrint.should.not.have.been.called;
+          }).should.notify(done);
+      });
+
+      it('returns an error message', done => {
+        postDonation()
+          .expect(500, {error: 'Oh noes!'})
+          .should.notify(done);
+      });
+    });
+
+    describe('when charge fails', () => {
+
+      beforeEach(() => {
+        charge.restore();
+        charge = sinon.stub(route, 'charge', error);
+      });
+      
+      it('stops execution of promise chain at #charge', done => {
+        postDonation()
+          .then(() => {
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.have.been.calledWith(ds[0]);
+            create.should.not.have.been.called;
+            prettyPrint.should.not.have.been.called;
+          }).should.notify(done);
+      });
+
+      it('returns an error message', done => {
+        postDonation()
+          .expect(500, {error: 'Oh noes!'})
+          .should.notify(done);
       });
     });
 
@@ -68,11 +167,21 @@ describe('Donation routes', () => {
 
       beforeEach(() => {
         create.restore();
-        create = sinon.stub(
-          dao, 'create', d => Promise.reject((new Error("Oh noes!"))));
+        create = sinon.stub(route, 'create', error);
+      });
+      
+      it('stops execution of promise chain at #create', done => {
+        postDonation()
+          .then(() => {
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.have.been.calledWith(ds[0]);
+            create.should.have.been.calledWith(ds[0]);
+            prettyPrint.should.not.have.been.called;
+          }).should.notify(done);
       });
 
-      it('returns error message', done => {
+      it('returns an error message', done => {
         postDonation()
           .expect(500, {error: 'Oh noes!'})
           .should.notify(done);
@@ -82,16 +191,17 @@ describe('Donation routes', () => {
 
   describe('GET /donations', () => {
 
-    let find;
     let getAll;
-    
+    let prettyPrintMany;
+
     beforeEach(() => {
-      find = sinon.stub(Donation, 'find', md.find);
-      getAll = sinon.spy(dao, 'getAll');
+      getAll = sinon.stub(route, 'getAll', () => Promise.resolve(ds));
+      prettyPrintMany = sinon.spy(route, 'prettyPrintMany');
     });
+
     afterEach(() => {
-      find.restore();
       getAll.restore();
+      prettyPrintMany.restore();
     });
 
     const getDonations = () => {
@@ -101,30 +211,36 @@ describe('Donation routes', () => {
         .expect('Content-Type', /json/);
     };
 
-    describe('when handling any request', () => {
+    describe('happy path', () => {
 
-      it('dispatches to dao#getAll', done => {
+      it('dispatches to #getAll', done => {
         getDonations()
-          .then(() => getAll.should.have.been.called)
-          .should.notify(done);
+          .then(() => {
+            getAll.should.have.been.calledOnce;
+            prettyPrintMany.should.have.been.calledWith(ds);
+          }).should.notify(done);
       });
-    });
-
-    describe('when db write succeeds', () => {
 
       it('returns just-recorded donations', done => {
         getDonations()
-          .expect(200, dResponse)
+          .expect(200, outDsResponse)
           .should.notify(done);
       });
     });
 
-    describe('when db write fails', () => {
+    describe('when db read fails', () => {
 
       beforeEach(() => {
-        find.restore();
-        find = sinon.stub(
-          Donation, 'find', d => Promise.reject((new Error("Oh noes!"))));
+        getAll.restore();
+        getAll = sinon.stub(route, 'getAll', error);
+      });
+
+      it('stops execution of promise chain at #getAll', done => {
+        getDonations()
+          .then(() => {
+            getAll.should.have.been.called;
+            prettyPrintMany.should.not.have.been.called;
+          }).should.notify(done);
       });
 
       it('returns error message', done => {

@@ -1,6 +1,6 @@
 /**
  *
- * Copyright (c) 2015-present, Total Location Test Paragraph.
+ * Copyright (c) 2016-present, Total Location Test Paragraph.
  * All rights reserved.
  *
  * This file is part of Where@. Where@ is free software:
@@ -15,20 +15,9 @@
  *
  */
 
-import Donation from '../models/donation';
-import {
-  assign, flow, map, reduce, sortBy, pick, pluck, omit, sum, keys, includes, values
-} from 'lodash';
+import { domainFields as df } from './dao';
+import { assign, reduce, keys, includes, values, flow } from 'lodash';
 
-export const domainFields = [
-  'email',
-  'name',
-  'anonymous',
-  'token',
-  'date',
-  'amount',
-];
-const df = domainFields;
 const pp = d => JSON.stringify(d, null, 2);
 
 // validate that a donation..
@@ -44,7 +33,7 @@ const correctFields = acc => {
     assign({}, acc, { err: new Error(badFieldMsg(acc.rec))});
 };
 
-// isn't empty
+// has no empty values
 export const emptyMsg = d => `empty fields in ${pp(d)}`;
 const hasLength = (acc, str) => acc && str.toString().length > 0;
 const nonEmpty = acc =>
@@ -60,41 +49,18 @@ const goodEmail = acc =>
   acc :
   assign({}, acc, { err: new Error(badEmailMsg(acc.rec)) });
 
+// has valid donation amount (and convert amount to cents)
+export const badAmountMsg = d => `invalid donation amount: ${d.amount}`;
+const goodAmount = acc => {
+  return acc.rec.amount !== 0 ?
+    acc :
+    assign({}, acc, { err: new Error(badAmountMsg(acc.rec)) });
+};
+
 // has all of the above properties
-const validations = [correctFields, nonEmpty, goodEmail];
+const validations = [correctFields, nonEmpty, goodAmount, goodEmail];
 export const validate = d => {
   const {err, rec} = flow(...validations)({rec: d, err: null});
   return err ? Promise.reject(err) : Promise.resolve(rec);
-};
-
-// parse a donation from a mongo record
-const getDoc = d => d._doc ? d._doc : d;
-const stripDbFields = d => omit(d, ['__v', '_id']);
-const resolveDateField = d => assign(d, {date: new Date(d.date).toString()});
-export const demongoify = flow(getDoc, stripDbFields, resolveDateField);
-
-// parse a donation collection from a mongo collection
-const anonymize = d => d.anonymous ? 'Anonymous' : d.name;
-const getShortFields = d => assign(pick(d, 'amount', 'date'), { name: anonymize(d) });
-const parseFields = ds => map(ds, flow(getDoc, getShortFields, resolveDateField));
-const sortByTime = ds => sortBy(ds, d => - new Date(d).getTime());
-export const demongoifyMany = flow(parseFields, sortByTime);
-
-// calculate total donation amount
-const pluckAmounts = ds => pluck(ds, 'amount');
-export const getTotal = flow(pluckAmounts, sum);
-
-// pull it all together!
-export default {
-  create: d =>
-    validate(d)
-    .then(d_ => Donation.create(d_)) // note: `Donation.create` can't be passed as lambda
-    .then(demongoify),
-  getAll: () =>
-    Donation.find({})
-    .then(ds => ({
-      total: getTotal(ds),
-      donations: demongoifyMany(ds)
-    }))
 };
 

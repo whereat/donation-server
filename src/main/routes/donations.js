@@ -16,21 +16,39 @@
  */
 
 import express from 'express';
-import dao from '../db/dao/donations';
-const route = express.Router();
+import { create, getAll } from '../models/donation/dao';
+import { validate } from '../models/donation/validate';
+import { parse } from '../models/donation/parse';
+import { prettyPrint, prettyPrintMany } from '../models/donation/prettyPrint';
+import { charge } from '../modules/stripe';
+import { assign } from 'lodash';
+const r = express.Router();
 
 const sendErr = (err, resp) => resp.status(500).json({ error: err });
 
-route.post('/', (req, res) => {
-  return dao.create(req.body)
-    .then(d => res.json(d))
+assign(r, {
+  charge: charge,
+  create: create,
+  getAll: getAll,
+  parse: parse,
+  prettyPrint: prettyPrint,
+  prettyPrintMany: prettyPrintMany,
+  validate: validate
+});
+
+r.post('/', (req, res) => {
+  r.parse(req.body)
+    .then(r.validate)
+    .then(r.charge)
+    .then(r.create)
+    .then(d => res.json(r.prettyPrint(d)))
     .catch(err => sendErr(err.message, res));
 });
 
-route.get('/', (req, res) => {
-  dao.getAll()
-    .then(ds => res.json(ds))
+r.get('/', (req, res) => {
+  r.getAll()
+    .then(ds => res.json(r.prettyPrintMany(ds)))
     .catch(err => sendErr(err.message, res));
 });
 
-export default route;
+export default r;
