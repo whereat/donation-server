@@ -17,7 +17,7 @@ import Donation from '../../../main/models/donation/schema';
 import { inDs, ds, outDs } from '../../support/sampleDonations';
 import { mongoify } from '../../support/dbHelpers';
 
-describe('Donation model', () => {
+describe('Donation schema', () => {
 
   beforeEach(done => {
     mg.connection.db ? done() : mg.connect(dbUri, done);
@@ -58,7 +58,7 @@ describe('Donation model', () => {
           Donation.count().should.become(1),
           Donation.find({})
             .then(ds => demongoify(ds[0]))
-            .should.become(outDs[0])
+            .should.become(ds[0])
 
         ])).should.notify(done);
     });
@@ -73,7 +73,7 @@ describe('Donation model', () => {
           Donation.count().should.become(3),
           Donation.find({})
             .then(ds => ds.map(demongoify))
-            .should.become(outDs)
+            .should.become(ds)
 
         ])).should.notify(done);
     });

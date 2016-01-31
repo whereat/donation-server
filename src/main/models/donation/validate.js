@@ -1,6 +1,5 @@
 import { domainFields as df } from './dao';
-import { toCents } from '../../modules/money';
-import { assign, merge, reduce, pluck, omit, keys, includes, values, flow } from 'lodash';
+import { assign, reduce, keys, includes, values, flow } from 'lodash';
 
 const pp = d => JSON.stringify(d, null, 2);
 
@@ -36,9 +35,8 @@ const goodEmail = acc =>
 // has valid donation amount (and convert amount to cents)
 export const badAmountMsg = d => `invalid donation amount: ${d.amount}`;
 const goodAmount = acc => {
-  const cents = toCents(acc.rec.amount);
-  return cents !== 0 ?
-    merge({}, acc, { rec: { amount: cents} }) : 
+  return acc.rec.amount !== 0 ?
+    acc :
     assign({}, acc, { err: new Error(badAmountMsg(acc.rec)) });
 };
 

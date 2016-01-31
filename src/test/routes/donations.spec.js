@@ -9,13 +9,11 @@ chai.use(asPromised);
 
 import request from 'supertest-as-promised';
 import app from '../../main/app';
-import { getStripeD, inDs, dResponse } from '../support/sampleDonations';
+import { getStripeInD, inDs, ds, outDs, outDsResponse } from '../support/sampleDonations';
 import Donation from '../../main/models/donation/schema';
 import md from '../support/mockDonation';
 
-//import express from 'express';
 import route from '../../main/routes/donations';
-import validations from '../../main/models/donation/validate';
 import stripe from '../../main/modules/stripe';
 import dao from '../../main/models/donation/dao';
 import donations from '../../main/routes/donations';
@@ -24,26 +22,29 @@ describe('Donation routes', () => {
 
   const error = d => Promise.reject(new Error("Oh noes!"));
 
-  let validate;
-  let charge;
-  let create;
-  let getAll;
-
-  beforeEach(() => {
-    validate = sinon.stub(route, 'validate', d => Promise.resolve(d));
-    charge = sinon.stub(route, 'charge', d => Promise.resolve(d));
-    create = sinon.stub(route, 'create', d => Promise.resolve(d));
-    getAll = sinon.stub(route, 'getAll', () => Promise.resolve(dResponse));
-  });
-
-  afterEach(() => {
-    validate.restore();
-    charge.restore();
-    create.restore();
-    getAll.restore();
-  });
-
   describe('POST /donations', () => {
+
+    let parse;
+    let validate;
+    let charge;
+    let create;
+    let prettyPrint;
+    
+    beforeEach(() => {
+      parse = sinon.spy(route, 'parse');
+      validate = sinon.stub(route, 'validate', d => Promise.resolve(d));
+      charge = sinon.stub(route, 'charge', d => Promise.resolve(d));
+      create = sinon.stub(route, 'create', d => Promise.resolve(d));
+      prettyPrint = sinon.spy(route, 'prettyPrint');
+    });
+
+    afterEach(() => {
+      parse.restore();
+      validate.restore();
+      charge.restore();
+      create.restore();
+      prettyPrint.restore();
+    });
 
     const postDonation = () => 
             request(app)
@@ -54,17 +55,44 @@ describe('Donation routes', () => {
 
     describe('happy path', () => {
 
-      it('dispatches to #validate, #charge, and #create', done => {
+      it('dispatches to chain of helper promises', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(inDs[0]);
-            charge.should.have.been.calledWith(inDs[0]);
-            create.should.have.been.calledWith(inDs[0]);
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.have.been.calledWith(ds[0]);
+            create.should.have.been.calledWith(ds[0]);
+            prettyPrint.should.have.been.calledWith(ds[0]);
           }).should.notify(done);
       });
 
       it('returns just-recorded donation', done => {
-        postDonation().expect(200, inDs[0], done);
+        postDonation().expect(200, outDs[0], done);
+      });
+    });
+
+    describe('when parsing fails', () => {
+
+      beforeEach(() => {
+        parse.restore();
+        parse = sinon.stub(route, 'parse', error);
+      });
+
+      it('stops execution of promise chain at #parse', done => {
+        postDonation()
+          .then(() => {
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.not.have.been.called;
+            charge.should.not.have.been.called;
+            create.should.not.have.been.called;
+            prettyPrint.should.not.have.been.called;
+          }).should.notify(done);
+      });
+
+      it('returns an error message', done => {
+        postDonation()
+          .expect(500, {error: 'Oh noes!'})
+          .should.notify(done);
       });
     });
 
@@ -75,12 +103,14 @@ describe('Donation routes', () => {
         validate = sinon.stub(route, 'validate', error);
       });
       
-      it('only dispatches to #validate', done => {
+      it('stops execution of promise chain at #validate', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(inDs[0]);
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
             charge.should.not.have.been.called;
             create.should.not.have.been.called;
+            prettyPrint.should.not.have.been.called;
           }).should.notify(done);
       });
 
@@ -98,12 +128,14 @@ describe('Donation routes', () => {
         charge = sinon.stub(route, 'charge', error);
       });
       
-      it('only dispatches to #validate and #charge', done => {
+      it('stops execution of promise chain at #charge', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(inDs[0]);
-            charge.should.have.been.calledWith(inDs[0]);
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.have.been.calledWith(ds[0]);
             create.should.not.have.been.called;
+            prettyPrint.should.not.have.been.called;
           }).should.notify(done);
       });
 
@@ -121,12 +153,14 @@ describe('Donation routes', () => {
         create = sinon.stub(route, 'create', error);
       });
       
-      it('dispatches to #validate, #charge, and #create', done => {
+      it('stops execution of promise chain at #create', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(inDs[0]);
-            charge.should.have.been.calledWith(inDs[0]);
-            create.should.have.been.calledWith(inDs[0]);
+            parse.should.have.been.calledWith(inDs[0]);
+            validate.should.have.been.calledWith(ds[0]);
+            charge.should.have.been.calledWith(ds[0]);
+            create.should.have.been.calledWith(ds[0]);
+            prettyPrint.should.not.have.been.called;
           }).should.notify(done);
       });
 
@@ -140,6 +174,19 @@ describe('Donation routes', () => {
 
   describe('GET /donations', () => {
 
+    let getAll;
+    let prettyPrintMany;
+
+    beforeEach(() => {
+      getAll = sinon.stub(route, 'getAll', () => Promise.resolve(ds));
+      prettyPrintMany = sinon.spy(route, 'prettyPrintMany');
+    });
+
+    afterEach(() => {
+      getAll.restore();
+      prettyPrintMany.restore();
+    });
+
     const getDonations = () => {
       return request(app)
         .get('/donations')
@@ -151,13 +198,15 @@ describe('Donation routes', () => {
 
       it('dispatches to #getAll', done => {
         getDonations()
-          .then(() => getAll.should.have.been.called)
-          .should.notify(done);
+          .then(() => {
+            getAll.should.have.been.calledOnce;
+            prettyPrintMany.should.have.been.calledWith(ds);
+          }).should.notify(done);
       });
 
       it('returns just-recorded donations', done => {
         getDonations()
-          .expect(200, dResponse)
+          .expect(200, outDsResponse)
           .should.notify(done);
       });
     });
@@ -169,10 +218,12 @@ describe('Donation routes', () => {
         getAll = sinon.stub(route, 'getAll', error);
       });
 
-      it('dispatches to #getAll', done => {
+      it('stops execution of promise chain at #getAll', done => {
         getDonations()
-          .then(() => getAll.should.have.been.called)
-          .should.notify(done);
+          .then(() => {
+            getAll.should.have.been.called;
+            prettyPrintMany.should.not.have.been.called;
+          }).should.notify(done);
       });
 
       it('returns error message', done => {

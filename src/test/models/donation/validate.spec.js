@@ -23,14 +23,14 @@ describe('Donation validation', () => {
   describe('happy path', () => {
 
     it('accepts a well-formed request', done => {
-      validate(inDs[0])
+      validate(ds[0])
         .should.become(ds[0])
         .should.notify(done);
     });
 
     it('accepts a well-formed anonymous request', done => {
       validate(anon)
-        .should.become(anon_)
+        .should.become(anon)
         .should.notify(done);
     });
   });

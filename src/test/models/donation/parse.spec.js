@@ -1,9 +1,27 @@
 import chai from 'chai';
 const should = chai.should();
+import asPromised from 'chai-as-promised';
+chai.use(asPromised);
 
-import { toCents, toDollarStr } from '../../main/modules/money';
+import { parse, toCents, nonDollarMsg } from '../../../main/models/donation/parse';
+import { inDs, ds, inNonDollar } from '../../support/sampleDonations';
 
-describe('Money module', () => {
+describe('Donation parse module', () => {
+
+  describe('#parse', () => {
+
+    it('parses a proper InDonation to a Donation', done => {
+      parse(inDs[0])
+        .should.become(ds[0])
+        .should.notify(done);
+    });
+
+    it('rejects an InDonation with an improper dollar amount', done => {
+      parse(inNonDollar)
+        .should.be.rejectedWith(nonDollarMsg(inNonDollar))
+        .should.notify(done);
+    });
+  });
 
   describe('#toCents', () => {
 
@@ -27,19 +45,8 @@ describe('Money module', () => {
       toCents('foobar').should.equal(0);
     });
   });
-
-  describe('#toDollarStr', () => {
-
-    it('converts cent integers to dollar strings', () => {
-
-      toDollarStr(100).should.equal("$1.00");
-      toDollarStr(100000).should.equal("$1000.00");
-      toDollarStr(0).should.equal("$0.00");
-      toDollarStr(99).should.equal("$0.99");
-      
-    });
-  });
 });
+
 
 
 

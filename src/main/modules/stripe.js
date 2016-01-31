@@ -1,8 +1,8 @@
 import stripe from 'stripe';
 import { stripeKey } from '../config';
-import { toCents } from './money';
 const s = stripe(stripeKey);
 
+// () -> Promise[String]
 export const getToken = () => new Promise(
   (rslv, rjct) =>
     s.tokens.create({
@@ -14,14 +14,15 @@ export const getToken = () => new Promise(
       }
     },(err, token) => err ? rjct(err) : rslv(token)));
 
-
+// (Donation) -> StripeCharge
 export const toCharge = d => ({
-  amount: toCents(d.amount),
+  amount: d.amount,
   currency: "usd",
   source: d.token,
   description: "Riseup Labs Donation"
 });
 
+// (Donation) -> Promise[Donation]
 export const charge = d => new Promise(
   (rslv, rjct) =>
     s.charges.create(

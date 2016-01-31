@@ -12,7 +12,7 @@ import { omit, assign, chain } from 'lodash';
 import Donation from '../../../main/models/donation/schema';
 import md from '../../support/mockDonation';
 import { mongoify } from '../../support/dbHelpers';
-import { inDs, ds, outDs, dResponse } from '../../support/sampleDonations';
+import { inDs, ds, outDs, outDsResponse } from '../../support/sampleDonations';
 
 import { create, getAll, demongoify, demongoifyMany, getTotal } from '../../../main/models/donation/dao';
 
@@ -26,7 +26,7 @@ describe('Donation DAO', () => {
 
     it('dispatches to Donation#create', done => {
       create(ds[0])
-        .should.become(outDs[0])
+        .should.become(ds[0])
         .then(() => dbCreate.should.have.been.calledWith(ds[0]))
         .should.notify(done);
     });
@@ -37,7 +37,7 @@ describe('Donation DAO', () => {
 
         it('parses a donation from a mongo document', done => {
           md.create(ds[0])
-            .then(d => demongoify(d).should.eql(outDs[0]))
+            .then(d => demongoify(d).should.eql(ds[0]))
             .should.notify(done);
         });
       });
@@ -59,29 +59,8 @@ describe('Donation DAO', () => {
     
     it('returns a list of short donations, newest first', done => {
       getAll()
-        .then(ds => ds.should.eql(dResponse))
+        .then(ds => ds.should.eql(ds))
         .should.notify(done);
-    });
-
-    describe('#getAll helpers', () => {
-
-      describe('#demongoifyMany', () => {
-
-        it('parses sorted donations from a mongo collectoion', done => {
-          md.find({})
-            .then(ds => demongoifyMany(ds).should.eql(dResponse.donations))
-            .should.notify(done);
-        });
-      });
-
-      describe('#getTotal', () => {
-
-        it('sums donations from a mongo collection', done => {
-          md.find({})
-            .then(ds => getTotal(ds).should.eql(ds[0].amount + ds[1].amount + ds[2].amount))
-            .should.notify(done);
-        });
-      });
     });
   });
 });

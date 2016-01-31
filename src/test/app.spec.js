@@ -11,15 +11,24 @@ const clearDb = mm(dbUri);
 
 import request from 'supertest-as-promised';
 import { assign, omit } from 'lodash';
-import { toDollarStr } from '../main/modules/money';
 
 import app from '../main/app';
 
 import {
-  getStripeD, inDs, ds, outDs, dResponse, missing, extra, empty, badEmail1 }
+  getStripeInD, inDs, ds, outDs,
+  outDsResponse,
+  inNonDollar,
+  inBadAmount, badAmount,
+  inBadAmountStr, badAmountStr,
+  inMissing, missing,
+  inExtra, extra,
+  inEmpty, empty,
+  inBadEmail1, badEmail1 }
 from './support/sampleDonations';
 
-import { badFieldMsg, emptyMsg, badEmailMsg } from '../main/models/donation/validate';
+import { badFieldMsg, emptyMsg, badEmailMsg, badAmountMsg } from '../main/models/donation/validate';
+import { prettyPrint } from '../main/models/donation/prettyPrint';
+import { parse, nonDollarMsg } from '../main/models/donation/parse';
 import Donation from '../main/models/donation/schema';
 
 describe('Application', () => {
@@ -38,38 +47,56 @@ describe('Application', () => {
     describe('when correctly formatted', () => {
 
       it('writes donation to db & returns it', done => {
-        getStripeD()
+        getStripeInD()
           .then(
             d => 
               submitDonation(d)
               .expect(200)
-              .then(res =>  res.body.should.eql(assign({}, d, {amount: toDollarStr(ds[0].amount)})))  
+              .then(res =>  parse(d).then(prettyPrint).should.become(res.body))
           ).should.notify(done);
       });
     });
 
     describe('when incorrectly formatted', () => {
 
+      it('returns error for non-dollar amount', done => {
+        submitDonation(inNonDollar)
+          .expect(500, {error: nonDollarMsg(inNonDollar)})
+          .should.notify(done);
+      });
+
       it('returns error on missing field', done => {
-        submitDonation(missing)
+        submitDonation(inMissing)
           .expect(500, {error: badFieldMsg(missing)})
           .should.notify(done);
       });
 
       it('returns error on extra field', done => {
-        submitDonation(extra)
+        submitDonation(inExtra)
           .expect(500, {error: badFieldMsg(extra)})
           .should.notify(done);
       });
 
       it('returns error on empty value', done => {
-        submitDonation(empty)
+        submitDonation(inEmpty)
           .expect(500, {error: emptyMsg(empty)})
           .should.notify(done);
       });
 
+      it('returns error on zero dollar donation (num)', done => {
+        submitDonation(inBadAmount)
+          .expect(500, { error: badAmountMsg(badAmount) })
+          .should.notify(done);
+      });
+
+      it('returns error on zero dollar donation (str)', done => {
+        submitDonation(inBadAmountStr)
+          .expect(500, { error: badAmountMsg(badAmount) })
+          .should.notify(done);
+      });
+
       it('returns error on bad email adddress', done => {
-        submitDonation(badEmail1)
+        submitDonation(inBadEmail1)
           .expect(500, {error: badEmailMsg(badEmail1)})
           .should.notify(done);
       });
@@ -91,7 +118,7 @@ describe('Application', () => {
           .then(() =>
                 getDonations()
                 .expect(200)
-                .then(res => res.body.should.eql(dResponse))
+                .then(res => res.body.should.eql(outDsResponse))
                ).should.notify(done);
       });
     });
