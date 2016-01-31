@@ -16,7 +16,8 @@ export const getToken = () => new Promise(
 export const toCents = amt => {
   switch(typeof amt) {
   case 'string':
-    const matches = amt.trim().match(/(\$?)(\d+)(\.?)(\d+)/);
+    const dollarPattern = /(\$?)(\d+)(\.?)(\d+)/;
+    const matches = amt.trim().match(dollarPattern);
     return parseInt(matches[2]) * 100 + parseInt(matches[4]);
   default:
     return amt * 100;

@@ -33,7 +33,6 @@ const goodEmail = acc =>
   assign({}, acc, { err: new Error(badEmailMsg(acc.rec)) });
 
 // TODO: has valid donation amount
-// move regexp in `stripe#toCents` here (and import into stripe)
 
 // has all of the above properties
 const validations = [correctFields, nonEmpty, goodEmail];
@@ -41,3 +40,4 @@ export const validate = d => {
   const {err, rec} = flow(...validations)({rec: d, err: null});
   return err ? Promise.reject(err) : Promise.resolve(rec);
 };
+

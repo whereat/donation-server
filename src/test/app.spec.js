@@ -13,7 +13,8 @@ import request from 'supertest-as-promised';
 import { omit } from 'lodash';
 
 import app from '../main/app';
-import { ds, dResponse, missing, extra, empty, badEmail1 } from './support/sampleDonations';
+import {
+  getStripeD, ds, dResponse, missing, extra, empty, badEmail1 } from './support/sampleDonations';
 import { badFieldMsg, emptyMsg, badEmailMsg } from '../main/models/donation/validate';
 import Donation from '../main/models/donation/schema';
 
@@ -33,10 +34,11 @@ describe('Application', () => {
     describe('when correctly formatted', () => {
 
       it('writes donation to db & returns it', done => {
-        submitDonation(ds[0])
-          .expect(200)
-          .then(res =>  res.body.should.eql(ds[0]))
-          .should.notify(done);
+        getStripeD().then(d => 
+          submitDonation(d)
+            .expect(200)
+            .then(res =>  res.body.should.eql(d))  
+        ).should.notify(done);
       });
     });
 

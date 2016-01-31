@@ -14,20 +14,20 @@ import md from '../../support/mockDonation';
 import { mongoify } from '../../support/dbHelpers';
 import { ds, dResponse } from '../../support/sampleDonations';
 
-import dao, { demongoify, demongoifyMany, getTotal } from '../../../main/models/donation/dao';
+import { create, getAll, demongoify, demongoifyMany, getTotal } from '../../../main/models/donation/dao';
 
 describe('Donation DAO', () => {
 
   describe('#create', () => {
 
-    let create;
-    before(() => create = sinon.stub(Donation, 'create', md.create));
-    after(() => create.restore());
+    let dbCreate;
+    beforeEach(() => dbCreate = sinon.stub(Donation, 'create', md.create));
+    afterEach(() => dbCreate.restore());
 
     it('dispatches to Donation#create', done => {
-      dao.create(ds[0])
+      create(ds[0])
         .should.become(ds[0])
-        .then(() => create.should.have.been.calledWith(ds[0]))
+        .then(() => dbCreate.should.have.been.calledWith(ds[0]))
         .should.notify(done);
     });
 
@@ -51,14 +51,14 @@ describe('Donation DAO', () => {
     afterEach(() => find.restore());
     
     it('dispatches to Donation#find and Donation#short', done => {
-      dao.getAll()
+      getAll()
         .then(() => find.should.have.been.calledOnce)
         .should.notify(done);
     });
 
     
     it('returns a list of short donations, newest first', done => {
-      dao.getAll()
+      getAll()
         .then(ds => ds.should.eql(dResponse))
         .should.notify(done);
     });

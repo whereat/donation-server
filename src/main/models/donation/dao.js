@@ -29,16 +29,13 @@ const pluckAmounts = ds => pluck(ds, 'amount');
 export const getTotal = flow(pluckAmounts, sum);
 
 // pull it all together!
-export default {
-  create: d =>
-    validate(d)
-    .then(d_ => Donation.create(d_)) // note: `Donation.create` can't be passed as lambda
-    .then(demongoify),
-  getAll: () =>
-    Donation.find({})
-    .then(ds => ({
-      total: getTotal(ds),
-      donations: demongoifyMany(ds)
-    }))
-};
+
+export const create = d =>
+  Donation.create(d).then(demongoify);
+
+export const getAll = () =>
+  Donation.find({}).then(ds => ({
+    total: getTotal(ds),
+    donations: demongoifyMany(ds)
+  }));
 

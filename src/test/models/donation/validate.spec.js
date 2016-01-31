@@ -10,12 +10,12 @@ chai.use(asPromised);
 import { omit, assign, chain } from 'lodash';
 
 import {
-  ds, anon, missing, extra, empty, badEmail1, badEmail2, badEmail3
+  ds, anon, missing, extra, empty, badAmount, badEmail1, badEmail2, badEmail3
 } from '../../support/sampleDonations';
 
 
 import {
-  validate, badFieldMsg, emptyMsg, badEmailMsg
+  validate, badFieldMsg, emptyMsg, badAmountMsg, badEmailMsg
 } from '../../../main/models/donation/validate' ;
 
 describe('Donation validation', () => {
@@ -73,7 +73,6 @@ describe('Donation validation', () => {
       validate(fubar)
         .should.be.rejectedWith(badEmailMsg(fubar))
         .should.notify(done);
-
     });
   });
 });
