@@ -1,5 +1,6 @@
 import stripe from 'stripe';
 import { stripeKey } from '../config';
+import { toCents } from './money';
 const s = stripe(stripeKey);
 
 export const getToken = () => new Promise(
@@ -13,16 +14,6 @@ export const getToken = () => new Promise(
       }
     },(err, token) => err ? rjct(err) : rslv(token)));
 
-export const toCents = amt => {
-  switch(typeof amt) {
-  case 'string':
-    const dollarPattern = /(\$?)(\d+)(\.?)(\d+)/;
-    const matches = amt.trim().match(dollarPattern);
-    return parseInt(matches[2]) * 100 + parseInt(matches[4]);
-  default:
-    return amt * 100;
-  }
-};
 
 export const toCharge = d => ({
   amount: toCents(d.amount),

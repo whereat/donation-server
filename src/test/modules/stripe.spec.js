@@ -9,8 +9,8 @@ chai.use(asPromised);
 
 import { ds, getStripeD } from '../support/sampleDonations';
 import { ommit, assign } from 'lodash';
-
-import { getToken, toCents, toCharge, charge } from '../../main/modules/stripe';
+import { toCents } from '../../main/modules/money';
+import { getToken, toCharge, charge } from '../../main/modules/stripe';
 
 describe('Stripe module', () => {
 
@@ -50,19 +50,6 @@ describe('Stripe module', () => {
     });
 
     describe('helpers', () => {
-
-      describe('#toCents', () => {
-
-        it('converts dollar strings to cent integers', () => {
-          toCents(100).should.equal(10000);
-          toCents(100.00).should.equal(10000);
-          toCents(100.99).should.equal(10099);
-          toCents('100.00').should.equal(10000);
-          toCents('$100.00').should.equal(10000);
-          toCents('$100.99').should.equal(10099);
-          toCents(' $100.99 ').should.equal(10099);
-        });
-      });
 
       describe('#toCharge', () => {
 
