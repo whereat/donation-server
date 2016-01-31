@@ -10,7 +10,7 @@ chai.use(asPromised);
 import { omit, assign, chain } from 'lodash';
 
 import {
-  ds, ds_, anon, anon_, missing, extra, empty, badAmount, badEmail1, badEmail2, badEmail3
+  inDs, ds, anon, anon_, missing, extra, empty, badAmount, badEmail1, badEmail2, badEmail3
 } from '../../support/sampleDonations';
 
 
@@ -23,8 +23,8 @@ describe('Donation validation', () => {
   describe('happy path', () => {
 
     it('accepts a well-formed request', done => {
-      validate(ds[0])
-        .should.become(ds_[0])
+      validate(inDs[0])
+        .should.become(ds[0])
         .should.notify(done);
     });
 
@@ -65,7 +65,7 @@ describe('Donation validation', () => {
 
     it('rejects request with many problems (but notifies of only one)', done => {
 
-      const fubar = chain(ds[0])
+      const fubar = chain(inDs[0])
               .omit('name')
               .assign({foo: 'bar', amount: '', email: 'foo@bar'})
               .value();

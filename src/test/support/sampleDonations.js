@@ -7,7 +7,7 @@ export const tokens = [
   "tok_17UaoMGd2qyJIviyiKmpRzm6"
 ];
 
-export const ds = [
+export const inDs = [
     {
       amount: "$100",
       date: 'Sun Dec 27 2015 00:00:01 GMT-0500 (EST)',
@@ -34,7 +34,7 @@ export const ds = [
     }
 ];
 
-export const ds_ = [
+export const ds = [
   {
     amount: 10000,
     date: 'Sun Dec 27 2015 00:00:01 GMT-0500 (EST)',
@@ -115,15 +115,15 @@ export const dResponse = {
 
 export const getStripeD = () =>
   getToken()
-  .then(t => assign({}, ds[0], {token: t.id}));
+  .then(t => assign({}, inDs[0], {token: t.id}));
 
-export const anon = assign({}, ds[0], { anonymous: false });
-export const anon_ = assign({}, ds_[0], { anonymous: false });
-export const missing = omit(ds[0], 'name');
-export const extra = assign({}, ds[0], { foo: 'bar'});
-export const empty = assign({}, ds[0], { name: ''});
-export const badAmount = assign({}, ds[0], { amount: ' $ 100 '});
-export const badEmail1 = assign({}, ds[0], { email: 'foo@bar' });
-export const badEmail2 = assign({}, ds[0], { email: 'foobar.com' });
-export const badEmail3 = assign({}, ds[0], { email: 'foo@ bar.com' });
+export const anon = assign({}, inDs[0], { anonymous: false });
+export const anon_ = assign({}, ds[0], { anonymous: false });
+export const missing = omit(inDs[0], 'name');
+export const extra = assign({}, inDs[0], { foo: 'bar'});
+export const empty = assign({}, inDs[0], { name: ''});
+export const badAmount = assign({}, inDs[0], { amount: ' $ 100 '});
+export const badEmail1 = assign({}, inDs[0], { email: 'foo@bar' });
+export const badEmail2 = assign({}, inDs[0], { email: 'foobar.com' });
+export const badEmail3 = assign({}, inDs[0], { email: 'foo@ bar.com' });
 

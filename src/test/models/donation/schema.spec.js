@@ -14,7 +14,7 @@ import { domainFields, demongoify, demongoifyMany } from '../../../main/models/d
 
 import { keys } from 'lodash';
 import Donation from '../../../main/models/donation/schema';
-import { ds, ds_, outDs } from '../../support/sampleDonations';
+import { inDs, ds, outDs } from '../../support/sampleDonations';
 import { mongoify } from '../../support/dbHelpers';
 
 describe('Donation model', () => {
@@ -30,20 +30,20 @@ describe('Donation model', () => {
   describe('fields', () => {
 
     it('has correct fields', () =>{
-      const d = new Donation(ds_[0]);
+      const d = new Donation(ds[0]);
 
       keys(d._doc).should.eql(['_id'].concat(domainFields));
     });
 
     it('populates fields correctly', () => {
-      const d = new Donation(ds_[0]);
+      const d = new Donation(ds[0]);
 
-      d.get('amount').should.equal(ds_[0].amount);
-      d.get('date').should.eql(new Date(ds_[0].date));
-      d.get('token').should.eql(ds_[0].token);
-      d.get('anonymous').should.equal(ds_[0].anonymous);
-      d.get('email').should.equal(ds_[0].email);
-      d.get('name').should.equal(ds_[0].name);
+      d.get('amount').should.equal(ds[0].amount);
+      d.get('date').should.eql(new Date(ds[0].date));
+      d.get('token').should.eql(ds[0].token);
+      d.get('anonymous').should.equal(ds[0].anonymous);
+      d.get('email').should.equal(ds[0].email);
+      d.get('name').should.equal(ds[0].name);
     });
   });
 
@@ -52,7 +52,7 @@ describe('Donation model', () => {
     it('creates a document', done => {
 
       Donation.count().should.become(0)
-        .then(() => Donation.create(ds_[0]))
+        .then(() => Donation.create(ds[0]))
         .then(() => Promise.all([
 
           Donation.count().should.become(1),
@@ -67,7 +67,7 @@ describe('Donation model', () => {
 
       Donation.count().should.become(0)
 
-        .then(() => Donation.create(ds_))
+        .then(() => Donation.create(ds))
         .then(() => Promise.all([
 
           Donation.count().should.become(3),

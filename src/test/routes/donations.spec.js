@@ -9,7 +9,7 @@ chai.use(asPromised);
 
 import request from 'supertest-as-promised';
 import app from '../../main/app';
-import { getStripeD, ds, dResponse } from '../support/sampleDonations';
+import { getStripeD, inDs, dResponse } from '../support/sampleDonations';
 import Donation from '../../main/models/donation/schema';
 import md from '../support/mockDonation';
 
@@ -49,7 +49,7 @@ describe('Donation routes', () => {
             request(app)
             .post('/donations')
             .set('Accept', 'application/json')
-            .send(ds[0])
+            .send(inDs[0])
             .expect('Content-Type', /json/);
 
     describe('happy path', () => {
@@ -57,14 +57,14 @@ describe('Donation routes', () => {
       it('dispatches to #validate, #charge, and #create', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(ds[0]);
-            charge.should.have.been.calledWith(ds[0]);
-            create.should.have.been.calledWith(ds[0]);
+            validate.should.have.been.calledWith(inDs[0]);
+            charge.should.have.been.calledWith(inDs[0]);
+            create.should.have.been.calledWith(inDs[0]);
           }).should.notify(done);
       });
 
       it('returns just-recorded donation', done => {
-        postDonation().expect(200, ds[0], done);
+        postDonation().expect(200, inDs[0], done);
       });
     });
 
@@ -78,7 +78,7 @@ describe('Donation routes', () => {
       it('only dispatches to #validate', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(ds[0]);
+            validate.should.have.been.calledWith(inDs[0]);
             charge.should.not.have.been.called;
             create.should.not.have.been.called;
           }).should.notify(done);
@@ -101,8 +101,8 @@ describe('Donation routes', () => {
       it('only dispatches to #validate and #charge', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(ds[0]);
-            charge.should.have.been.calledWith(ds[0]);
+            validate.should.have.been.calledWith(inDs[0]);
+            charge.should.have.been.calledWith(inDs[0]);
             create.should.not.have.been.called;
           }).should.notify(done);
       });
@@ -124,9 +124,9 @@ describe('Donation routes', () => {
       it('dispatches to #validate, #charge, and #create', done => {
         postDonation()
           .then(() => {
-            validate.should.have.been.calledWith(ds[0]);
-            charge.should.have.been.calledWith(ds[0]);
-            create.should.have.been.calledWith(ds[0]);
+            validate.should.have.been.calledWith(inDs[0]);
+            charge.should.have.been.calledWith(inDs[0]);
+            create.should.have.been.calledWith(inDs[0]);
           }).should.notify(done);
       });
 

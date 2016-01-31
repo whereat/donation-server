@@ -16,7 +16,7 @@ import { toDollarStr } from '../main/modules/money';
 import app from '../main/app';
 
 import {
-  getStripeD, ds, ds_, outDs, dResponse, missing, extra, empty, badEmail1 }
+  getStripeD, inDs, ds, outDs, dResponse, missing, extra, empty, badEmail1 }
 from './support/sampleDonations';
 
 import { badFieldMsg, emptyMsg, badEmailMsg } from '../main/models/donation/validate';
@@ -43,7 +43,7 @@ describe('Application', () => {
             d => 
               submitDonation(d)
               .expect(200)
-              .then(res =>  res.body.should.eql(assign({}, d, {amount: toDollarStr(ds_[0].amount)})))  
+              .then(res =>  res.body.should.eql(assign({}, d, {amount: toDollarStr(ds[0].amount)})))  
           ).should.notify(done);
       });
     });
@@ -87,7 +87,7 @@ describe('Application', () => {
     describe('when db has contents', () => {
 
       it('returns all donations in DB', done => {
-        Donation.create(ds_)
+        Donation.create(ds)
           .then(() =>
                 getDonations()
                 .expect(200)

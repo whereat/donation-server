@@ -7,10 +7,12 @@ const r = express.Router();
 
 const sendErr = (err, resp) => resp.status(500).json({ error: err });
 
-r.validate = validate;
-r.charge = charge;
-r.create = create;
-r.getAll = getAll;
+assign(r, {
+  validate: validate,
+  charge: charge,
+  create: create,
+  getAll: getAll
+});
 
 r.post('/', (req, res) => {
   r.validate(req.body)
