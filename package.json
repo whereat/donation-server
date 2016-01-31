@@ -10,12 +10,14 @@
     "mongodb": "^2.1.3",
     "mongoose": "^4.3.4",
     "stripe": "^4.2.0"
+    "regexp-clone": "0.0.1",
+    "sliced": "^1.0.1"
   },
   "devDependencies": {
     "babel": "^6.3.26",
     "babel-cli": "^6.3.17",
     "babel-preset-es2015": "^6.3.13",
-    "babel-register": "^6.3.13",
+    "babel-register": "^6.4.3",
     "chai": "^3.4.1",
     "chai-as-promised": "^5.2.0",
     "chai-datetime": "^1.4.0",
