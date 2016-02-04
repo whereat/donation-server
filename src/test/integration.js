@@ -11,6 +11,7 @@ import { keys } from 'lodash';
 import sa from 'superagent';
 import sap from 'superagent-promise';
 const request = sap(sa, Promise);
+const port = process.env.PORT;
 
 describe('Live server', () => {
 
@@ -19,7 +20,7 @@ describe('Live server', () => {
     getStripeInD()
       .then(d =>
             request
-            .post('http://localhost:3000/donations')
+            .post(`http://localhost:${port}/donations`)
             .set('Accept', 'application/json')
             .send(d)
             .end()

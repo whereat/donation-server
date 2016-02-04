@@ -19,12 +19,13 @@ import app from './app';
 import { dbUri } from './config';
 import db from 'mongoose';
 db.Promise = Promise;
+const port = process.env.PORT;
 
 const connect = () => 
   db.connect(dbUri, { server: { socketOptions: { keepAlive: 1 } } }).connection;
 
 const listen = () =>
-  app.listen(3000, () => console.log('App listening on port 3000'));
+  app.listen(port, () => console.log(`App listening on port ${port}`));
 
 connect()
   .on('error', console.log)
