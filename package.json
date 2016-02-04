@@ -35,10 +35,10 @@
   "scripts": {
     "test": "npm run unit && npm run integration",
     "unit": "NODE_ENV=test mocha $(find src -name '*spec.js') --compilers js:babel-register",
-    "integration": "NODE_ENV=test PORT=3002 node ./target/donationServer.js & NODE_ENV=test PORT=3002 mocha ./src/test/integration.js --compilers js:babel-register",
+    "integration": "NODE_ENV=test PORT=3002 node ./target/index.js & NODE_ENV=test PORT=3002 mocha ./src/test/integration.js --compilers js:babel-register",
     "build": "babel ./src/main --out-dir ./target",
-    "dev": "NODE_ENV=dev PORT=3001 babel-node ./src/main/donationServer.js",
-    "prod": "NODE_ENV=prod PORT=3000 node ./target/donationServer.js"
+    "dev": "NODE_ENV=dev PORT=3001 babel-node ./src/main/index.js",
+    "prod": "NODE_ENV=prod PORT=3000 node ./target/index.js"
   },
   "repository": {
     "type": "git",

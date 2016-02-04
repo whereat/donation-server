@@ -24,8 +24,10 @@ const port = process.env.PORT;
 const connect = () => 
   db.connect(dbUri, { server: { socketOptions: { keepAlive: 1 } } }).connection;
 
-const listen = () =>
-  app.listen(port, () => console.log(`App listening on port ${port}`));
+const listen = () => {
+  console.log("Connected to database.");
+  app.listen(port, () => console.log(`App listening on port ${port}.`));
+};
 
 connect()
   .on('error', console.log)
