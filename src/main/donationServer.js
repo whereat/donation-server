@@ -16,14 +16,17 @@
  */
 
 import app from './app';
+import { dbUri } from './config';
+import db from 'mongoose';
+db.Promise = Promise;
 
-//TODO: insert mongo connection here a la
-// https://github.com/madhums/node-express-mongoose-demo/blob/master/server.js
+const connect = () => 
+  db.connect(dbUri, { server: { socketOptions: { keepAlive: 1 } } }).connection;
 
-//TODO: be sure to set mongoose.Promise = Promise
+const listen = () =>
+  app.listen(3000, () => console.log('App listening on port 3000'));
 
-
-const server = app.listen(3000, () => {
-  const { address: host, port } = server.address();
-  console.log(`App listening at http://${host}:${port}`);
-});
+connect()
+  .on('error', console.log)
+  .on('disconnected', connect)
+  .once('open', listen);
