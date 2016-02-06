@@ -35,7 +35,7 @@ export const inDs = [
     },
     {
       amount: "$200.00",
-      date: 'Sun Dec 27 2015 00:00:02 GMT-0500 (EST)',
+      date: 'Mon Jan 4 2016 00:00:02 GMT-0500 (EST)',
       token: tokens[1],
       anonymous: false,
       name: 'donor2',
@@ -43,7 +43,7 @@ export const inDs = [
     },
     {
       amount: " $300.00 ",
-      date: 'Sun Dec 27 2015 00:00:03 GMT-0500 (EST)',
+      date: 'Wed Dec 30 2015 00:00:03 GMT-0500 (EST)',
       token: tokens[2],
       anonymous: false,
       name: 'donor3',
@@ -62,7 +62,7 @@ export const ds = [
   },
   {
     amount: 20000,
-    date: 'Sun Dec 27 2015 00:00:02 GMT-0500 (EST)',
+    date: 'Mon Jan 04 2016 00:00:02 GMT-0500 (EST)',
     token: tokens[1],
     anonymous: false,
     name: 'donor2',
@@ -70,7 +70,7 @@ export const ds = [
   },
   {
     amount: 30000,
-    date: 'Sun Dec 27 2015 00:00:03 GMT-0500 (EST)',
+    date: 'Wed Dec 30 2015 00:00:03 GMT-0500 (EST)',
     token: tokens[2],
     anonymous: false,
     name: 'donor3',
@@ -82,24 +82,24 @@ export const ds = [
 export const outDs = [
     {
       amount: "$100.00",
-      date: 'Sun Dec 27 2015 00:00:01 GMT-0500 (EST)',
+      date: '12/27/15',
       name: 'Anonymous'
     },
     {
       amount: "$200.00",
-      date: 'Sun Dec 27 2015 00:00:02 GMT-0500 (EST)',
+      date: '1/4/16',
       name: 'donor2'
     },
     {
       amount: "$300.00",
-      date: 'Sun Dec 27 2015 00:00:03 GMT-0500 (EST)',
+      date: '12/30/15',
       name: 'donor3'
     }
 ];
 
 export const outDsResponse = {
   total: "$600.00",
-  donations: [outDs[2], outDs[1], outDs[0]]
+  donations: [outDs[1], outDs[2], outDs[0]]
 };
 
 export const getStripeInD = () =>
