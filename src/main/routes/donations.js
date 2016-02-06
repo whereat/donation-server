@@ -24,7 +24,10 @@ import { charge } from '../modules/stripe';
 import { assign } from 'lodash';
 const r = express.Router();
 
-const sendErr = (err, resp) => resp.status(500).json({ error: err });
+const sendErr = (err, resp) => {
+  console.log('Error processing donation: ', err);
+  resp.status(500).json({ error: err });
+};
 
 assign(r, {
   charge: charge,

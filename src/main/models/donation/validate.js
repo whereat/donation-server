@@ -25,7 +25,7 @@ const pp = d => JSON.stringify(d, null, 2);
 // has correct fields
 export const badFieldMsg = d =>`incorrect fields in: \n ${pp(d)}\n should have fields:\n ${df}`;
 const noMissing = ks => ks.length === df.length;
-const noExtra = ks => reduce(ks, (acc, k) => acc && includes(df, k));
+const noExtra = ks => reduce(ks, (acc, k) => acc && includes(df, k), true);
 const correctFields = acc => {
   const ks = keys(acc.rec);
   return noMissing(ks) && noExtra(ks) ?
@@ -37,7 +37,7 @@ const correctFields = acc => {
 export const emptyMsg = d => `empty fields in ${pp(d)}`;
 const hasLength = (acc, str) => acc && str.toString().length > 0;
 const nonEmpty = acc =>
-  reduce(values(acc.rec), hasLength) ?
+  reduce(values(acc.rec), hasLength, true) ?
   acc :
   assign({}, acc, { err: new Error(emptyMsg(acc.rec)) });
 
@@ -45,7 +45,7 @@ const nonEmpty = acc =>
 export const badEmailMsg = d => `bad email address: ${d.email}`;
 const emailTest = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 const goodEmail = acc =>
-  acc.rec.email.match(emailTest) !== null ?
+  acc.rec.email && acc.rec.email.match(emailTest) !== null ?
   acc :
   assign({}, acc, { err: new Error(badEmailMsg(acc.rec)) });
 

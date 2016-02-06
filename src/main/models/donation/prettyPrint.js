@@ -18,12 +18,15 @@
 import { assign, flow, map, sortBy, pick, pluck, sum } from 'lodash';
 
 // (Donation) -> OutDonation
-export const prettyPrint = d => flow(anonymize, pickFields, formatAmount)(d);
+export const prettyPrint = d => flow(anonymize, pickFields, formatFields)(d);
 
 // (Donation) -> ShortDonation
 export const anonymize = d => assign({}, d, { name: d.anonymous ? 'Anonymous' : d.name });
 export const pickFields = d => pick(d, 'amount', 'date', 'name');
-export const formatAmount = d => assign({}, d, { amount: toDollarStr(d.amount) });
+export const formatFields = d => assign({}, d, {
+  amount: toDollarStr(d.amount),
+  date: toMDY(d.date)
+});
 
 // (Number) -> String
 export const toDollarStr = num => {
@@ -31,6 +34,13 @@ export const toDollarStr = num => {
   const pad = num => num > 9 ? num : `0${num}`;
   return `\$${dollars}.${pad(cents)}`;
 };
+
+// (String) -> String
+export const toMDY = date => {
+  const d = new Date(date);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getYear() - 100}`;
+};
+  
 
 // (Array[Donation]) -> OutDonationList
 export const prettyPrintMany = ds => ({
@@ -41,7 +51,7 @@ export const prettyPrintMany = ds => ({
 // #prettyPrintMany helpers
 
 // (Array[ShortDonation]) -> Array[ShortDonation]
-export const sortByTime = ds => sortBy(ds, d => - new Date(d).getTime());
+export const sortByTime = ds => sortBy(ds, d => -new Date(d.date));
 
 // (Array[Donation]) -> Number
 export const getTotal = ds => flow(ds => pluck(ds, 'amount'), sum, toDollarStr)(ds);

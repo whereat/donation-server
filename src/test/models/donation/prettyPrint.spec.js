@@ -19,7 +19,7 @@ import chai from 'chai';
 const should = chai.should();
 
 import {
-  prettyPrint, toDollarStr, anonymize, pickFields,
+  prettyPrint, toDollarStr, anonymize, pickFields, toMDY,
   prettyPrintMany, sortByTime, getTotal
 } from '../../../main/models/donation/prettyPrint';
 import { inDs, ds, outDs, outDsResponse } from '../../support/sampleDonations';
@@ -64,6 +64,16 @@ describe('Donation pretty print module', () => {
           toDollarStr(99).should.equal("$0.99");
         });
       });
+
+      describe('#toMDY', () => {
+
+        it('converts a date string to M/D/YY', () => {
+
+          toMDY(ds[0].date).should.equal('12/27/15');
+          toMDY(ds[1].date).should.equal('1/4/16');
+          toMDY(ds[2].date).should.equal('12/30/15');
+        });
+      });
     });
   });
 
@@ -78,7 +88,7 @@ describe('Donation pretty print module', () => {
       describe('#sortByTime', () => {
 
         it('sorts donations in reverse chronological order', () => {
-          sortByTime(ds).should.eql(ds.slice().reverse());
+          sortByTime(ds).should.eql([ds[1], ds[2], ds[0]]);
         });
       });
 
