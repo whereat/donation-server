@@ -76,7 +76,7 @@ describe('Stripe module', () => {
             amount: ds[0].amount,
             currency: "usd",
             source: ds[0].token,
-            description: "Riseup Labs Donation"
+            description: "Donation to Where@"
           });
         });
       });
