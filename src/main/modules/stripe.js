@@ -36,7 +36,7 @@ export const toCharge = d => ({
   amount: d.amount,
   currency: "usd",
   source: d.token,
-  description: "Riseup Labs Donation"
+  description: "Donation to Where@"
 });
 
 // (Donation) -> Promise[Donation]
