@@ -29,11 +29,14 @@ export const parse = d =>
   Promise.resolve( assign({},d, { amount: toCents(d.amount) }) ) :
   Promise.reject( new Error(nonDollarMsg(d)) ); 
 
+// (String) -> String
+const stripCommas = str => str.replace(/,/g, '');
+
 // (Either[String, Number]) ->  Number
 export const toCents = amt => {
   switch(typeof amt) {
   case 'string':
-    const matches = matchesDollarPattern(amt);
+    const matches = matchesDollarPattern(stripCommas(amt));
     return !matches ? 0 : parseInt(matches[2]) * 100 + (parseInt(matches[4]) || 0);
   default:
     return amt * 100;

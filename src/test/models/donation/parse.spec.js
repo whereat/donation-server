@@ -42,7 +42,7 @@ describe('Donation parse module', () => {
 
   describe('#toCents', () => {
 
-    it('converts dollar strings to cent integers', () => {
+    it.only('converts dollar strings to cent integers', () => {
 
       toCents(100).should.equal(10000);
       toCents(100.00).should.equal(10000);
@@ -58,6 +58,8 @@ describe('Donation parse module', () => {
       toCents('$100.000').should.equal(10000);
       toCents(' 100 ').should.equal(10000);
       toCents(' 100.00 ').should.equal(10000);
+
+      toCents('$1,000,000.00').should.equal(100000000);
       
       toCents('foobar').should.equal(0);
     });
